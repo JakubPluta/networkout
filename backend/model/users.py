@@ -77,6 +77,13 @@ class User(Base):
         self._password = value
 
 
+class Image(Base):
+    __tablename__ = 'image'
+    id = Column(Integer, primary_key=True)
+    path = Column(String, nullable=False)
+    extension = Column(String, nullable=False)
+
+
 class Profile(Base):
     __tablename__ = "profile"
     id = Column(Integer, primary_key=True)
@@ -86,7 +93,7 @@ class Profile(Base):
     bio = Column(Text, nullable=True)
     birth_date = Column(DateTime, nullable=True)
     phone_number = Column(String, nullable=True)
-    picture = Column(String, nullable=True)
+    profile_image = Column(Integer, ForeignKey('image.id'))
 
     is_active = Column(Boolean, default=True)
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
