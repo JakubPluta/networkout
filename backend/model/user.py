@@ -1,5 +1,4 @@
 from sqlalchemy import (
-    Boolean,
     Column,
     ForeignKey,
     Integer,
@@ -7,10 +6,10 @@ from sqlalchemy import (
     Table,
     DateTime,
     func,
-    Text,
+    Boolean
 )
 from sqlalchemy.orm import relationship, backref
-from backend.database import Base, engine, meta
+from backend.database.base_class import Base
 
 CASCADE_ALL_DELETE = "all, delete"
 
@@ -29,13 +28,6 @@ user_role = Table(
     Column("role_id", Integer, ForeignKey("role.id"), primary_key=True),
 )
 
-profile_hobbies = Table(
-    "profile_hobbies",
-    Base.metadata,
-    Column("profile_id", Integer, ForeignKey("profile.id")),
-    Column("hobby_id", Integer, ForeignKey("hobby.id")),
-)
-
 
 class Role(Base):
     __tablename__ = "role"
@@ -52,68 +44,17 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
-
-    _password = Column(String, nullable=False)
-
+    hashed_password = Column(String(255),  nullable=False)
+    is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     addresses = relationship("Address", secondary=user_address, back_populates="users")
     roles = relationship("Role", secondary=user_role, backref=backref("users", lazy="joined"))
 
-    profile = relationship("Profile",  back_populates='user',  uselist=False, cascade=CASCADE_ALL_DELETE)
-
     def __repr__(self):
         return f"<User {self.username} {self.email}>"
-
-    @property
-    def password(self):
-        return self._password
-
-    @password.setter
-    def password(self, value):
-        if len(value) < 6:
-            raise Exception("Password should be minimum 6 character long")
-        self._password = value
-
-
-class Image(Base):
-    __tablename__ = 'image'
-    id = Column(Integer, primary_key=True)
-    path = Column(String, nullable=False)
-    extension = Column(String, nullable=False)
-
-
-class Profile(Base):
-    __tablename__ = "profile"
-    id = Column(Integer, primary_key=True)
-
-    user_id = Column(Integer, ForeignKey("user.id"))
-
-    bio = Column(Text, nullable=True)
-    birth_date = Column(DateTime, nullable=True)
-    phone_number = Column(String, nullable=True)
-    profile_image = Column(Integer, ForeignKey('image.id'))
-
-    is_active = Column(Boolean, default=True)
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-    user = relationship("User", back_populates='profile')
-
-    hobbies = relationship("Hobby", back_populates='profiles', secondary=profile_hobbies)
-
-
-class Hobby(Base):
-    __tablename__ = "hobby"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, unique=True)
-    description = Column(Text, nullable=True)
-
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-    profiles = relationship("Profile", back_populates='hobbies', secondary=profile_hobbies)
 
 
 class Address(Base):
