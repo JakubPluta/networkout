@@ -1,65 +1,66 @@
-import jwt
-from fastapi import HTTPException, Security
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from passlib.context import CryptContext
+from jose import jwt
+from fastapi import HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
+from backend.config import settings
+from fastapi import status
+from typing import Optional
+from backend.model.user import User
+from sqlalchemy.orm import Session
+from backend.crud import user as user_crud
+from backend.security.hash_funcs import verify_password
+from backend.database.db import get_db
+from backend.schemas.auth import TokenData
 
 
-class _AuthHandler:
-    security = HTTPBearer()
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    secret = 'SECRET'
+CredentialsException = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+)
 
-    def get_password_hash(self, password):
-        return self.pwd_context.hash(password)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
-    def verify_password(self, password, hashed_password):
-        return self.pwd_context.verify(password, hashed_password)
 
-    def encode_jwt_token(self, user_id):
-        payload = {
-            'exp' : datetime.utcnow() + timedelta(days=0, minutes=30),
-            "iat" : datetime.utcnow(),
-            "scope" : "access_token",
-            "sub" : user_id
-        }
-        return jwt.encode(payload, self.secret, algorithm="HS256")
+def encode_jwt_token(user_id: str) -> str:
+    payload = {
+        'exp' : datetime.utcnow() + timedelta(days=0, minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        "iat" : datetime.utcnow(),
+        "scope" : "access_token",
+        "sub" : user_id
+    }
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
-    def decode_jwt_token(self, token):
-        try:
-            payload = jwt.decode(token, self.secret, algorithms=["HS256"])
-            if payload["scope"] == "access_token":
-                return payload['sub']
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail="JTW token expired")
-        except jwt.InvalidTokenError:
-            raise HTTPException(status_code=401, detail="Invalid token")
 
-    def encode_refresh_token(self, username: str) -> str:
-        payload = {
-            'exp': datetime.utcnow() + timedelta(days=0, hours=1),
-            'iat': datetime.utcnow(),
-            'scope': 'refresh_token',
-            'sub': username
-        }
-        return jwt.encode(
-            payload,
-            self.secret,
-            algorithm='HS256'
+def authenticate(*, email: str, password: str, db: Session) -> Optional[User]:
+    user = user_crud.get_user_by_email(email=email, db=db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with email {email} not found.")
+    if not verify_password(password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Incorrect email or password")
+    return user
+
+
+def get_current_user(*, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+            options={'verify_aud' : False}
         )
 
-    def refresh_token(self, token):
-        try:
-            payload = jwt.decode(token, self.secret, algorithms=["HS256"])
-            if payload["scope"] == "refresh_token":
-                username = payload['sub']
-                return self.encode_jwt_token(username)
-            raise HTTPException(status_code=401, detail='Invalid scope for token')
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail='Refresh token expired')
-        except jwt.InvalidTokenError:
-            raise HTTPException(status_code=401, detail='Invalid refresh token')
+        user_id = payload.get('sub')
 
+        if user_id is None:
+            raise CredentialsException
+        token_data = TokenData(user_id=user_id)
 
-AuthHandler = _AuthHandler()
+    except jwt.JWTError as e:
+        raise CredentialsException
+
+    user = user_crud.get_user(db=db, user_id=int(token_data.user_id))
+    if user is None:
+        raise CredentialsException
+    return user
 

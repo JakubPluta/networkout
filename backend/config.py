@@ -72,4 +72,4 @@ def get_node():
     return node
 
 
-settings = get_config(get_node())
+settings: Type[Config] = get_config(get_node())

@@ -7,6 +7,8 @@ from backend.crud import user as user_crud
 from typing import Optional, List
 from fastapi import status, HTTPException
 
+from backend.model.user import User
+from backend.security.auth import get_current_user
 router = APIRouter()
 
 
@@ -27,3 +29,8 @@ def fetch_user(user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
     return user
+
+
+@router.put('/{user_id}')
+def update_user(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    pass

@@ -2,7 +2,7 @@ from backend.model.user import User
 import bcrypt
 from sqlalchemy.orm import Session
 # https://github.com/scionoftech/FastAPI-Full-Stack-Samples/blob/master/FastAPISQLAlchamy/app/crud/crud_users.py
-from backend.security.auth import AuthHandler as AH
+from backend.security.hash_funcs import get_password_hash
 from backend import schemas
 
 
@@ -10,7 +10,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     create_data = user.dict()
     create_data.pop('password')
     user_db = User(**create_data)
-    hashed_password = AH.get_password_hash(user.password)
+    hashed_password = get_password_hash(user.password)
     user_db.hashed_password = hashed_password
     db.add(user_db)
     db.commit()
@@ -39,3 +39,4 @@ def is_superuser(db: Session, user_id: int) -> bool:
     if usr:
         superuser = usr.is_superuser
     return superuser
+
