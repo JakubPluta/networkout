@@ -1,4 +1,4 @@
-from backend.model.user import User
+from backend.model.user import User, Address
 import bcrypt
 from sqlalchemy.orm import Session
 # https://github.com/scionoftech/FastAPI-Full-Stack-Samples/blob/master/FastAPISQLAlchamy/app/crud/crud_users.py
@@ -15,6 +15,26 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.add(user_db)
     db.commit()
     return user_db
+
+
+def update_user(db: Session, db_user: User, user: schemas.UserUpdate):
+    user_from_db = db_user
+    for field, value in user.dict().items():
+        if field == 'password':
+            setattr(user_from_db, 'hashed_password', get_password_hash(value))
+        else:
+            setattr(user_from_db, field, value)
+    db.add(user_from_db)
+    db.commit()
+    db.refresh(user_from_db)
+    return user_from_db
+
+
+def delete_user(db: Session, db_user: User):
+    db.delete(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return True
 
 
 def get_user(db: Session, user_id: int):
@@ -39,4 +59,21 @@ def is_superuser(db: Session, user_id: int) -> bool:
     if usr:
         superuser = usr.is_superuser
     return superuser
+
+
+def create_address_for_user(db: Session, user: User, address: schemas.AddressCreate):
+    address_to_db = \
+        Address(
+            city=address.city,
+            country =address.country,
+            postal_code =address.postal_code,
+            street_name = address.street_number,
+            street_number = address.street_number
+    )
+
+    user.addresses.append(address_to_db)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
 
