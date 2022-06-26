@@ -61,8 +61,8 @@ def is_superuser(db: Session, user_id: int) -> bool:
     return superuser
 
 
-def create_address_for_user(db: Session, user: User, address: schemas.AddressCreate):
-    address_to_db = \
+def create_address(db: Session, address: schemas.AddressCreate):
+    address_to_db: Address = \
         Address(
             city=address.city,
             country =address.country,
@@ -71,9 +71,31 @@ def create_address_for_user(db: Session, user: User, address: schemas.AddressCre
             street_number = address.street_number
     )
 
-    user.addresses.append(address_to_db)
+
+
+def create_address_for_user(db: Session, user: User, address: schemas.AddressCreate):
+    address_to_db: Address = \
+        Address(
+            city=address.city,
+            country =address.country,
+            postal_code =address.postal_code,
+            street_name = address.street_number,
+            street_number = address.street_number
+    )
+
+    user.add_address(address_to_db)
     db.add(user)
     db.commit()
     db.refresh(user)
     return user
+
+
+def get_address_by_id(db: Session, address_id: int):
+    return db.query(Address).filter(Address.id == address_id).first()
+
+
+def get_user_address(db: Session, user_id: int):
+    user = get_user(db, user_id)
+    return user.addresses if user else None
+
 

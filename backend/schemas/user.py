@@ -19,11 +19,18 @@ class AddressCreate(AddressBase):
 
 class AddressFromDB(AddressBase):
     id: Optional[int] = None
+
+    class Config:
+        orm_mode = True
+
+
+class AddressFromDBFull(AddressFromDB):
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
 
     class Config:
         orm_mode = True
+
 
 class UserBase(BaseModel):
     username: str
