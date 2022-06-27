@@ -35,7 +35,9 @@ class Config(BaseSettings):
         raise ValueError(v)
 
     SQLALCHEMY_DATABASE_URI: Optional[str] = 'sqlite:///local.db'
-    FIRST_SUPERUSER: EmailStr = "test@networkout.com"
+
+    FIRST_SUPERUSER_USERNAME: str = "test"
+    FIRST_SUPERUSER_EMAIL: EmailStr = "test@networkout.com"
     FIRST_SUPERUSER_PASSWORD: str = "test"
 
     class Config:
@@ -45,22 +47,25 @@ class Config(BaseSettings):
 class ProdConfig(Config):
     SECRET_KEY: str = os.getenv('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI: str  = os.getenv('DB_URI')
-    FIRST_SUPERUSER: EmailStr = os.getenv('DB_USERNAME')
-    FIRST_SUPERUSER_PASSWORD: str = os.getenv('DB_PASSWORD')
+    FIRST_SUPERUSER_USERNAME: str = os.getenv('SUPERUSER_USERNAME')
+    FIRST_SUPERUSER_EMAIL: EmailStr =  os.getenv('SUPERUSER_EMAIL')
+    FIRST_SUPERUSER_PASSWORD: str =  os.getenv('SUPERUSER_PASSWORD')
 
 
 class LocalConfig(Config):
 
     SECRET_KEY: str =  'this is amazing secret'
     SQLALCHEMY_DATABASE_URI: str = 'sqlite:///networkout.db'
-    FIRST_SUPERUSER: EmailStr = 'admin@app.com'
-    FIRST_SUPERUSER_PASSWORD: str = 'admin'
+
+    FIRST_SUPERUSER_USERNAME: str = "test"
+    FIRST_SUPERUSER_EMAIL: EmailStr = "test@networkout.com"
+    FIRST_SUPERUSER_PASSWORD: str = "test"
 
 
 def get_config(env='local') -> Type[Config]:
     assert env.lower() in ['local','prod'], "Env variable needs to be prod, local or test. By default: local"
     try:
-        return getattr(sys.modules[__name__], f"{str(env).title()}Config")()
+        return getattr(sys.modules[__name__], f"{str(env).title()}Config").__call__()
     except AttributeError as e:
         logger.info(f'could not find config: {env}')
     return LocalConfig.__call__()

@@ -10,7 +10,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, backref
 from backend.database.base_class import Base
-
+from backend.database.db import get_db
+from sqlalchemy import event
+from sqlalchemy.orm import Session
 
 CASCADE_ALL_DELETE = "all, delete"
 
@@ -32,6 +34,8 @@ class Group(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    created_by_id = Column(Integer, ForeignKey('user.id'))
+    created_by = relationship("User", backref=backref("user"))
     users = relationship("User", secondary=users_groups, back_populates="groups")
 
 
@@ -40,7 +44,9 @@ class Role(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
-
+    description = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     def __str__(self):
         return self.name
@@ -65,7 +71,6 @@ class User(Base):
     role_id = Column(Integer, ForeignKey('role.id'))
     role = relationship("Role", backref=backref("user", lazy="joined"))
     groups = relationship("Group", secondary=users_groups, back_populates="users")
-
 
     def __repr__(self):
         return f"<User {self.username} {self.email}>"
