@@ -10,9 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, backref
 from backend.database.base_class import Base
-from backend.database.db import get_db
-from sqlalchemy import event
-from sqlalchemy.orm import Session
+
 
 CASCADE_ALL_DELETE = "all, delete"
 
@@ -50,6 +48,10 @@ class Role(Base):
 
     def __str__(self):
         return self.name
+
+    @property
+    def name_lower(self):
+        return str(self.name).lower()
 
 
 class User(Base):

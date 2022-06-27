@@ -64,3 +64,10 @@ def get_current_user(*, db: Session = Depends(get_db), token: str = Depends(oaut
         raise CredentialsException
     return user
 
+
+def get_current_superuser(*, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> User:
+    if not user_crud.is_superuser(db, current_user.id):  # 2
+        raise HTTPException(
+            status_code=400, detail="The user doesn't have enough privileges"
+        )
+    return current_user

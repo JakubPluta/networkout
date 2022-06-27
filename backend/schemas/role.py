@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, Sequence
 from pydantic import BaseModel
 
 
@@ -25,3 +25,7 @@ class RoleDB(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class RolesList(BaseModel):
+    results: Sequence[RoleDB]

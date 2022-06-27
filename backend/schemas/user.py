@@ -3,6 +3,7 @@ from typing import Optional, Sequence, List
 
 from pydantic import BaseModel
 from pydantic import EmailStr
+from backend.schemas.role import RoleCreate, RoleDB
 
 
 class UserBase(BaseModel):
