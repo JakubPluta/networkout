@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional
+from typing import Optional, List, Sequence
 from pydantic import BaseModel
 
 
@@ -26,3 +26,6 @@ class GroupDB(BaseModel):
     class Config:
         orm_mode = True
 
+
+class GroupList(BaseModel):
+    results: Sequence[GroupDB]

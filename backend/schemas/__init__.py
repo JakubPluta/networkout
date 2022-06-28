@@ -1,5 +1,6 @@
 from .user import *
 from .role import *
+from .group import *
 
 
 class RoleDBUsers(BaseModel):

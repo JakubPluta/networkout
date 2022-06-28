@@ -1,6 +1,5 @@
 from backend.model.user import User, Role
 from sqlalchemy.orm import Session
-from backend.security.hash_funcs import get_password_hash
 from backend import schemas
 
 
@@ -40,17 +39,6 @@ def get_role_by_id(db: Session, role_id: int) -> Role:
 
 def get_role_by_name(db: Session, name: str):
     return db.query(Role).filter(Role.name == name).first()
-
-
-# def add_role_to_user(db: Session, user: User, role_id: int):
-#     role = get_role_by_id(db, role_id)
-#     if not role:
-#         return None
-#     user.role = role
-#     db.add(user)
-#     db.commit()
-#     db.refresh(user)
-#     return user
 
 
 def add_role_to_user(db: Session, user: User, role_id: int):
