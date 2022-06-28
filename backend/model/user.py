@@ -46,6 +46,8 @@ class Role(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    users = relationship("User", back_populates="role")
+
     def __str__(self):
         return self.name
 
@@ -71,7 +73,8 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     role_id = Column(Integer, ForeignKey('role.id'))
-    role = relationship("Role", backref=backref("user", lazy="joined"))
+    role = relationship("Role", back_populates="users")
+
     groups = relationship("Group", secondary=users_groups, back_populates="users")
 
     def __repr__(self):

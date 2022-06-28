@@ -14,7 +14,7 @@ logger.setLevel(logging.INFO)
 module = sys.modules[__name__]
 
 
-class Config(BaseSettings):
+class Config():
     API_V1_STR: str = '/api/v1'
     SECRET_KEY: str  = "secret"
     ALGORITHM: str = "HS256"
@@ -57,9 +57,9 @@ class LocalConfig(Config):
     SECRET_KEY: str =  'this is amazing secret'
     SQLALCHEMY_DATABASE_URI: str = 'sqlite:///networkout.db'
 
-    FIRST_SUPERUSER_USERNAME: str = "test"
-    FIRST_SUPERUSER_EMAIL: EmailStr = "test@networkout.com"
-    FIRST_SUPERUSER_PASSWORD: str = "test"
+    FIRST_SUPERUSER_USERNAME: str = "admin"
+    FIRST_SUPERUSER_EMAIL: EmailStr = "admin@networkout.com"
+    FIRST_SUPERUSER_PASSWORD: str = "admin"
 
 
 def get_config(env='local') -> Type[Config]:

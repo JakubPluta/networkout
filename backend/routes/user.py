@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from backend.crud import user as user_crud
 from fastapi import status, HTTPException
 from backend.model.user import User
-from backend.security.auth import get_current_user
-
+from backend.security.auth import get_current_user, get_current_superuser
+from backend.crud import role as role_crud
 
 router = APIRouter()
 
@@ -43,3 +43,4 @@ def delete_user(*, current_user: User = Depends(get_current_user), user_id: int,
     if deleted:
         return {'msg' : f'user wit id {user_id} successfully deleted'}
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Something went wrong, user was not deleted.")
+

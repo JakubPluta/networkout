@@ -1,9 +1,8 @@
 import datetime
-from typing import Optional, Sequence, List
-
+from typing import Optional, Sequence
 from pydantic import BaseModel
 from pydantic import EmailStr
-from backend.schemas.role import RoleCreate, RoleDB
+from .role import RoleDBRead
 
 
 class UserBase(BaseModel):
@@ -13,6 +12,12 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+
+
+class UserCreateAdminView(UserBase):
+    password: str
+    is_superuser: bool = True
+    role_id: Optional[int]
 
 
 class UserUpdate(BaseModel):
@@ -26,7 +31,7 @@ class UserFromDB(UserBase):
     is_active: bool
     created_at: datetime.datetime
     updated_at: Optional[datetime.datetime]
-    role_id: Optional[int]
+    role: Optional[RoleDBRead]
 
     class Config:
         orm_mode = True

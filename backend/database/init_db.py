@@ -4,44 +4,59 @@ from backend.database.db import get_db
 from backend.config import settings
 import logging
 from backend.security.hash_funcs import get_password_hash
+from backend import schemas
+from backend.crud import role as role_crud
+from backend.crud import user as user_crud
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+ROLES = [
+    schemas.RoleCreate(name='admin', description='This is administrator role'),
+    schemas.RoleCreate(name='user', description='This is user role'),
+    schemas.RoleCreate(name='test', description='This is test role'),
+]
+
+USERS = [
+    (schemas.UserCreateAdminView(
+        username=settings.FIRST_SUPERUSER_USERNAME,
+        email=settings.FIRST_SUPERUSER_EMAIL,
+        password=settings.FIRST_SUPERUSER_PASSWORD,
+        is_superuser=True,
+    ), 'admin'),
+    (schemas.UserCreateAdminView(
+        username='user',
+        email='user@networkout.com',
+        password='user',
+        is_superuser=False,
+    ), 'user'),
+
+    (schemas.UserCreateAdminView(
+        username='testuser',
+        email='testuser@networkout.com',
+        password='testuser',
+        is_superuser=False,
+    ), 'test' )
+]
+
+
 def init_db(db: Session):
     """create super user"""
-    initial_roles = [
-        Role(name='admin', description='Administrator'),
-        Role(name='user', description='User'),
-    ]
 
-    initial_groups = [
-        Group(name='users', description='Users'),
-        Group(name='guests', description='Guests'),
-    ]
+    for role in ROLES:
+        current_role = role_crud.get_role_by_name(db, role.name)
+        if current_role is None:
+            role_crud.create_role(db, role)
 
-    db.add_all([*initial_groups, *initial_roles])
-    db.commit()
-    logger.info("Groups and roles created")
+    for user, role_name in USERS:
+        current_user = user_crud.get_user_by_email(db, user.email)
+        user_role = role_crud.get_role_by_name(db, role_name)
+        if current_user is None:
+            setattr(user, 'role_id', user_role.id)
+            print(user)
+            user_crud.create_user_with_role(
+                db, user
+            )
 
-    admin: Role = db.query(Role).filter(Role.name=='admin').first()
-
-    if settings.FIRST_SUPERUSER_EMAIL:
-
-        first_user = User(
-            username=settings.FIRST_SUPERUSER_USERNAME,
-            email=settings.FIRST_SUPERUSER_EMAIL,
-            hashed_password=get_password_hash(settings.FIRST_SUPERUSER_PASSWORD),
-            is_superuser=True,
-            role_id = admin.id,
-        )
-        db.add(first_user)
-        db.commit()
-        logger.info(f"Super user created with email: {settings.FIRST_SUPERUSER_EMAIL}")
-
-        for grp in db.query(Group).all():
-            grp.created_by_id = db.query(User).filter(User.username == settings.FIRST_SUPERUSER_USERNAME).first().id
-            db.add(grp)
-            db.commit()
-    logger.info("Super user not found in config file. No user created.")

@@ -17,6 +17,18 @@ def create_user(db: Session, user: schemas.UserCreate):
     return user_db
 
 
+def create_user_with_role(db: Session, user: schemas.UserCreateAdminView):
+    create_data = user.dict()
+    create_data.pop('password')
+    user_db = User(**create_data)
+    hashed_password = get_password_hash(user.password)
+    user_db.hashed_password = hashed_password
+    db.add(user_db)
+    db.commit()
+    return user_db
+
+
+
 def update_user(db: Session, db_user: User, user: schemas.UserUpdate):
     user_from_db = db_user
     for field, value in user.dict().items():
