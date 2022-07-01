@@ -25,6 +25,10 @@ class UserUpdate(BaseModel):
     password: str
 
 
+class UserSuperUserUpdate(BaseModel):
+    is_superuser: bool = False
+
+
 class UserFromDB(UserBase):
     id: int
     is_superuser: bool

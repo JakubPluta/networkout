@@ -1,4 +1,4 @@
 run:
-	uvicorn backend.api:app --port 8000 --reload
+	uvicorn backend.app:app --port 8000 --reload
 
 

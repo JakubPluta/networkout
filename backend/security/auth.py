@@ -11,7 +11,7 @@ from backend.crud import user as user_crud
 from backend.security.hash_funcs import verify_password
 from backend.database.db import get_db
 from backend.schemas.auth import TokenData
-
+from backend.crud import group as group_crud
 
 CredentialsException = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -71,3 +71,21 @@ def get_current_superuser(*, current_user: User = Depends(get_current_user), db:
             status_code=400, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+def _get_group_owner(*, group_id: int,  db: Session = Depends(get_db)) -> User:
+    group = group_crud.get_group_by_id(db, group_id)
+    if group is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id} doesn't exist")
+    return user_crud.get_user(db, group.created_by_id)
+
+
+def check_if_current_user_is_group_owner(*, current_user:User =  Depends(get_current_user), group_id: int, db: Session = Depends(get_db)) -> bool:
+    group_owner = _get_group_owner(group_id=group_id, db=db)
+    if current_user.id == group_owner.id:
+        return False
+    return False
+
+
+def check_if_is_superuser(*, user_id: int, db: Session = Depends(get_db)) -> bool:
+    return user_crud.is_superuser(db, user_id)

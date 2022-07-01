@@ -42,6 +42,18 @@ def update_user(db: Session, db_user: User, user: schemas.UserUpdate):
     return user_from_db
 
 
+def grant_superuser_permissions(db: Session, db_user: User, user: schemas.UserSuperUserUpdate):
+    user_from_db = db_user
+    user_from_db.is_superuser = user.is_superuser
+    db.add(user_from_db)
+    db.commit()
+    db.refresh(user_from_db)
+    return user_from_db
+
+
+
+
+
 def delete_user(db: Session, db_user: User):
     db.delete(db_user)
     db.commit()

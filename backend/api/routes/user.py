@@ -44,3 +44,16 @@ def delete_user(*, current_user: User = Depends(get_current_user), user_id: int,
         return {'msg' : f'user wit id {user_id} successfully deleted'}
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Something went wrong, user was not deleted.")
 
+
+@router.put('/{user_id}/grant-superuser', response_model=schemas.UserFromDB, status_code=status.HTTP_201_CREATED)
+def grant_users_permission(*, current_user: User = Depends(get_current_superuser), user: schemas.UserSuperUserUpdate, db: Session = Depends(get_db)):
+    updated_user = user_crud.grant_superuser_permissions(db, current_user, user)
+    return updated_user
+
+
+@router.get('/{user_id}/superuser', status_code=status.HTTP_201_CREATED)
+def fetch_if_is_superuser(*, user_id: int , db: Session = Depends(get_db)) -> dict:
+    user = user_crud.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+    return {'msg' : f"User: {user.username} ({user.email}) {'is' if user.is_superuser else 'is not'} superuser"}
