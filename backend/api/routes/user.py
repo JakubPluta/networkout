@@ -57,3 +57,28 @@ def fetch_if_is_superuser(*, user_id: int , db: Session = Depends(get_db)) -> di
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
     return {'msg' : f"User: {user.username} ({user.email}) {'is' if user.is_superuser else 'is not'} superuser"}
+
+
+@router.put('/befriend/{user_id}', status_code=status.HTTP_201_CREATED, response_model=schemas.UserWithFriends)
+def befriend(*, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), other_user_id: int):
+    other_user = user_crud.get_user(db=db, user_id=other_user_id)
+    if other_user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {other_user_id} not found")
+
+    user = user_crud.become_friend_with_user(db, current_user, other_user)
+    return user
+
+
+@router.put('/unfriend/{user_id}', status_code=status.HTTP_201_CREATED, response_model=schemas.UserWithFriends)
+def unfriend(*, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), other_user_id: int):
+    other_user = user_crud.get_user(db=db, user_id=other_user_id)
+    if other_user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {other_user_id} not found")
+    user = user_crud.unfriend_with_user(db, current_user, other_user)
+    return user
+
+
+@router.get('/friends/', status_code=status.HTTP_201_CREATED, response_model=schemas.Friends)
+def fetch_my_friends(*, current_user: User = Depends(get_current_user)):
+    friends = user_crud.get_my_friends(current_user)
+    return {'results': friends}

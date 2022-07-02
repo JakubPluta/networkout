@@ -1,5 +1,6 @@
+from __future__ import annotations
 import datetime
-from typing import Optional, Sequence
+from typing import Optional, Sequence, List
 from pydantic import BaseModel
 from pydantic import EmailStr
 from .role import RoleDBRead
@@ -41,5 +42,20 @@ class UserFromDB(UserBase):
         orm_mode = True
 
 
+class UserFromDBSmall(UserBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
 class UsersList(BaseModel):
     results: Sequence[UserFromDB]
+
+
+class UserWithFriends(UserFromDBSmall):
+    friends: List[Optional[UserFromDBSmall]]
+
+
+class Friends(BaseModel):
+    results: Sequence[UserFromDBSmall]

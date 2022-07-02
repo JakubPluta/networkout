@@ -83,3 +83,28 @@ def is_superuser(db: Session, user_id: int) -> bool:
     if usr:
         superuser = usr.is_superuser
     return superuser
+
+
+def become_friend_with_user(db: Session, user: User, other_user: User):
+    user_updated = user.befriend(other_user)
+    if user_updated is None:
+        return user
+
+    db.add_all([user,other_user])
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def unfriend_with_user(db: Session, user: User, other_user: User):
+    user_updated = user.unfriend(other_user)
+    if user_updated is None:
+        return user
+    db.add_all([user,other_user])
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def get_my_friends(user: User):
+    return user.friends

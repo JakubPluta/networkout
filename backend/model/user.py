@@ -1,3 +1,4 @@
+from __future__ import annotations
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -6,7 +7,7 @@ from sqlalchemy import (
     Table,
     DateTime,
     func,
-    Boolean
+    Boolean, UniqueConstraint
 )
 from sqlalchemy.orm import relationship, backref
 from backend.database.base_class import Base
@@ -21,6 +22,16 @@ users_groups = Table(
     Column("user_id", Integer, ForeignKey("user.id"), primary_key=True),
     Column("group_id", Integer, ForeignKey("group.id"), primary_key=True),
 )
+
+
+friendship = Table(
+    'friendships', Base.metadata,
+    Column('user_id', Integer, ForeignKey('user.id'), index=True),
+    Column('friend_id', Integer, ForeignKey('user.id')),
+    UniqueConstraint('user_id', 'friend_id', name='unique_friendships')
+)
+
+
 
 
 class Group(Base):
@@ -77,5 +88,29 @@ class User(Base):
 
     groups = relationship("Group", secondary=users_groups, back_populates="users")
 
+    friends = relationship('User', secondary=friendship,
+                           primaryjoin=(id==friendship.c.user_id),
+                           secondaryjoin=(id==friendship.c.friend_id),
+                           backref=backref('friendships'),
+                    )
+
     def __repr__(self):
         return f"<User {self.username} {self.email}>"
+
+    def befriend(self, user: User):
+        if not self.is_friend(user):
+            self.friends.append(user)
+            user.friends.append(self)
+            return self
+        return None
+
+    def unfriend(self, user: User):
+        if self.is_friend(user):
+            self.friends.remove(user)
+            user.friends.remove(self)
+            return self
+        return None
+
+    def is_friend(self, user: User):
+        return user in self.friends
+
