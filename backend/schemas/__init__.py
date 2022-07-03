@@ -1,6 +1,7 @@
 from .user import *
 from .role import *
 from .group import *
+from .event import *
 
 
 class RoleDBUsers(BaseModel):
@@ -12,3 +13,13 @@ class RoleDBUsers(BaseModel):
     class Config:
         orm_mode = True
 
+
+class GroupWithUsers(GroupDB):
+    users: List[UserFromDBSmall]
+
+
+class GroupList(BaseModel):
+    results: Sequence[GroupWithUsers]
+
+    class Config:
+        orm_mode = True

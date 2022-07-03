@@ -20,7 +20,7 @@ def fetch_all_groups(db: Session = Depends(get_db)) -> dict:
     return {'results' : results or []}
 
 
-@router.get('/{group_id}', response_model=schemas.GroupDB, status_code=status.HTTP_200_OK)
+@router.get('/{group_id}', response_model=schemas.GroupList, status_code=status.HTTP_200_OK)
 def fetch_group(group_id: int, db: Session = Depends(get_db)):
     grp = group_crud.get_group_by_id(db, group_id)
     if not grp:
@@ -28,7 +28,7 @@ def fetch_group(group_id: int, db: Session = Depends(get_db)):
     return grp
 
 
-@router.get('/{group_name}/name', response_model=schemas.GroupDB, status_code=status.HTTP_200_OK)
+@router.get('/{group_name}/name', response_model=schemas.GroupWithUsers, status_code=status.HTTP_200_OK)
 def fetch_group(group_name: str, db: Session = Depends(get_db)):
     grp = group_crud.get_group_by_name(db, group_name)
     if not grp:
@@ -62,18 +62,21 @@ def add_user_to_group(*, group_id: int, user_id: int, db: Session = Depends(get_
                       is_superuser =  Depends(check_if_is_superuser)
                       ):
 
-    if group_owner is False or is_superuser is False:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You need to be group creator or superuser to add users to group")
+    if group_owner is True or is_superuser is True:
 
-    usr = user_crud.get_user(db, user_id)
-    if usr is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
+        usr = user_crud.get_user(db, user_id)
+        if usr is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {user_id} not found")
 
-    if group_crud.is_user_in_group(db, usr, group_id):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User with id {user_id} already belongs to group {group_id}")
-
-    group = group_crud.add_user_to_group(db, usr, user_id)
-    return group
+        if group_crud.is_user_in_group(db, usr, group_id):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User with id {user_id} already belongs to group {group_id}")
+        try:
+            group = group_crud.add_user_to_group(db, usr, group_id)
+            return group
+        except AttributeError:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Group with id {group_id } doesn't exists")
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                        detail="You need to be group creator or superuser to add users to group")
 
 
 @router.put('/{group_id}/remove/{user_id}')

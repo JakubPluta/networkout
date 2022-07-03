@@ -87,5 +87,5 @@ def check_if_current_user_is_group_owner(*, current_user:User =  Depends(get_cur
     return False
 
 
-def check_if_is_superuser(*, user_id: int, db: Session = Depends(get_db)) -> bool:
-    return user_crud.is_superuser(db, user_id)
+def check_if_is_superuser(*, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> bool:
+    return current_user.is_superuser

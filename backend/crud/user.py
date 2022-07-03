@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 # https://github.com/scionoftech/FastAPI-Full-Stack-Samples/blob/master/FastAPISQLAlchamy/app/crud/crud_users.py
 from backend.security.hash_funcs import get_password_hash
 from backend import schemas
+from backend.utils.exc import FriendshipException
 
 
 def create_user(db: Session, user: schemas.UserCreate):
@@ -86,25 +87,28 @@ def is_superuser(db: Session, user_id: int) -> bool:
 
 
 def become_friend_with_user(db: Session, user: User, other_user: User):
-    user_updated = user.befriend(other_user)
-    if user_updated is None:
-        return user
-
-    db.add_all([user,other_user])
-    db.commit()
-    db.refresh(user)
+    try:
+        user.befriend(other_user)
+        db.add_all([user,other_user])
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        raise FriendshipException(f"{user} is already friend with {other_user}") from e
     return user
 
 
 def unfriend_with_user(db: Session, user: User, other_user: User):
-    user_updated = user.unfriend(other_user)
-    if user_updated is None:
-        return user
-    db.add_all([user,other_user])
-    db.commit()
-    db.refresh(user)
+    try:
+        user.unfriend(other_user)
+        db.add_all([user,other_user])
+        db.commit()
+        db.refresh(user)
+    except Exception as e:
+        raise FriendshipException(f"{user} is are not friend with {other_user}") from e
     return user
 
 
 def get_my_friends(user: User):
     return user.friends
+
+

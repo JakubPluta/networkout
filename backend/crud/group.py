@@ -12,7 +12,7 @@ def get_all_groups(db: Session):
 
 
 def get_group_by_id(db: Session, group_id: int) -> Group:
-    return db.query(Group).filter(Group.id==group_id).first()
+    return db.query(Group).filter(Group.id == group_id).first()
 
 
 def get_group_by_name(db: Session, name: str):
@@ -35,7 +35,6 @@ def delete_group(db: Session, group: Group):
 
 def add_user_to_group(db: Session, user: User, group_id: int):
     group = get_group_by_id(db, group_id)
-
     group.users.append(user)
     db.add(group)
     db.commit()
@@ -54,3 +53,4 @@ def remove_user_from_group(group: Group,  user: User):
 def is_user_in_group(db: Session, user: User, group_id: int):
     group = get_group_by_id(db, group_id)
     return user in group.users
+

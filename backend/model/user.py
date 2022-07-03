@@ -11,9 +11,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, backref
 from backend.database.base_class import Base
-
+from .event import event_participants, Event
 
 CASCADE_ALL_DELETE = "all, delete"
+
 
 
 users_groups = Table(
@@ -30,8 +31,6 @@ friendship = Table(
     Column('friend_id', Integer, ForeignKey('user.id')),
     UniqueConstraint('user_id', 'friend_id', name='unique_friendships')
 )
-
-
 
 
 class Group(Base):
@@ -94,22 +93,21 @@ class User(Base):
                            backref=backref('friendships'),
                     )
 
+    events_joined = relationship("Event", secondary=event_participants, back_populates="participants")
+    events_organized = relationship("Event", back_populates="host")
+
     def __repr__(self):
         return f"<User {self.username} {self.email}>"
 
     def befriend(self, user: User):
-        if not self.is_friend(user):
-            self.friends.append(user)
-            user.friends.append(self)
-            return self
-        return None
+        self.friends.append(user)
+        user.friends.append(self)
+        return self
 
     def unfriend(self, user: User):
-        if self.is_friend(user):
-            self.friends.remove(user)
-            user.friends.remove(self)
-            return self
-        return None
+        self.friends.remove(user)
+        user.friends.remove(self)
+        return self
 
     def is_friend(self, user: User):
         return user in self.friends

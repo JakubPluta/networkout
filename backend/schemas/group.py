@@ -27,5 +27,3 @@ class GroupDB(BaseModel):
         orm_mode = True
 
 
-class GroupList(BaseModel):
-    results: Sequence[GroupDB]
