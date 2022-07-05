@@ -1,4 +1,3 @@
-
 class FriendshipException(Exception):
     pass
 

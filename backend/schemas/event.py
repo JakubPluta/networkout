@@ -27,10 +27,3 @@ class EventDB(EventBase):
 
     class Config:
         orm_mode = True
-
-
-class EventsList(BaseModel):
-    results: Sequence[EventDB]
-
-    class Config:
-        orm_mode = True

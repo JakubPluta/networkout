@@ -25,5 +25,3 @@ class GroupDB(BaseModel):
 
     class Config:
         orm_mode = True
-
-

@@ -17,14 +17,13 @@ app.add_middleware(
 )
 
 
-app.include_router(user_router, prefix='/user', tags=['users'])
-app.include_router(auth_router, prefix='/auth', tags=['auth'])
-app.include_router(role_router, prefix='/role', tags=['role'])
-app.include_router(group_router, prefix='/group', tags=['group'])
-app.include_router(event_router, prefix='/event', tags=['events'])
+app.include_router(user_router, prefix="/user", tags=["users"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(role_router, prefix="/role", tags=["role"])
+app.include_router(group_router, prefix="/group", tags=["group"])
+app.include_router(event_router, prefix="/event", tags=["events"])
 
 
 @app.get("/")
 def main():
     return {"message": "Hello World"}
-

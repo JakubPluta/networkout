@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent.parent
 alembic_cfg = Config(ROOT / "alembic.ini")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     command.downgrade(alembic_cfg, "base")
     db = SessionLocal()
     command.upgrade(alembic_cfg, "head")

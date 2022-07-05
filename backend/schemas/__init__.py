@@ -23,3 +23,14 @@ class GroupList(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class EventWithParticipants(EventDB):
+    participants: List[UserFromDBSmall]
+
+
+class EventsList(BaseModel):
+    results: Sequence[EventWithParticipants]
+
+    class Config:
+        orm_mode = True

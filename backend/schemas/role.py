@@ -43,6 +43,6 @@ class RolesList(BaseModel):
 
 
 class RoleEnum(str, Enum):
-    admin: str = 'admin'
-    test: str = 'test'
-    user: str = 'user'
+    admin: str = "admin"
+    test: str = "test"
+    user: str = "user"

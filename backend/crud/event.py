@@ -1,4 +1,3 @@
-
 from backend.model.user import User, Event
 from sqlalchemy.orm import Session
 from backend import schemas
@@ -42,7 +41,7 @@ def join_event(db: Session, user: User, event: Event):
         db.commit()
         db.refresh(event)
         return event
-    raise EventException(f'User {user.id} already participate in event {event.name}')
+    raise EventException(f"User {user.id} already participate in event {event.name}")
 
 
 def quit_event(db: Session, user: User, event: Event):
@@ -52,7 +51,7 @@ def quit_event(db: Session, user: User, event: Event):
         db.commit()
         db.refresh(event)
         return event
-    raise EventException(f'User {user.id} not participate in event {event.name}')
+    raise EventException(f"User {user.id} not participate in event {event.name}")
 
 
 def get_event_participates(event: Event):

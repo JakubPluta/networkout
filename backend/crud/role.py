@@ -34,7 +34,7 @@ def delete_role(db: Session, role_id: int):
 
 
 def get_role_by_id(db: Session, role_id: int) -> Role:
-    return db.query(Role).filter(Role.id==role_id).first()
+    return db.query(Role).filter(Role.id == role_id).first()
 
 
 def get_role_by_name(db: Session, name: str):

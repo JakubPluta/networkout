@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import datetime
+
 from sqlalchemy import (
     Column,
     ForeignKey,
@@ -7,9 +10,10 @@ from sqlalchemy import (
     Table,
     DateTime,
     func,
-    Boolean, UniqueConstraint
+    Boolean,
+    UniqueConstraint,
 )
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, validates
 from backend.database.base_class import Base
 
 
@@ -23,19 +27,24 @@ event_participants = Table(
 )
 
 
-
 class Event(Base):
-    __tablename__ = 'event'
+    __tablename__ = "event"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    address = Column(String,nullable=False)
+    address = Column(String, nullable=False)
     date = Column(DateTime, nullable=False)
 
-    host_id = Column(Integer, ForeignKey('user.id'))
+    host_id = Column(Integer, ForeignKey("user.id"))
     host = relationship("User")
 
     participants = relationship(
-        'User', secondary=event_participants, back_populates='events_joined'
+        "User", secondary=event_participants, back_populates="events_joined"
     )
+
+    @validates("date")
+    def validate_date(self, key, value):
+        if datetime.datetime.utcnow() <= value:
+            raise ValueError(f"Event date should be future date")
+        return value

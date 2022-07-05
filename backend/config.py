@@ -14,11 +14,11 @@ logger.setLevel(logging.INFO)
 module = sys.modules[__name__]
 
 
-class Config():
-    API_V1_STR: str = '/api/v1'
-    SECRET_KEY: str  = "secret"
+class Config:
+    API_V1_STR: str = "/api/v1"
+    SECRET_KEY: str = "secret"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int  = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
         "http://localhost:3000",
@@ -26,15 +26,15 @@ class Config():
     ]
     BACKEND_CORS_ORIGIN_REGEX: Optional[str] = None
 
-    @validator('BACKEND_CORS_ORIGINS', pre=True)
+    @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[str, List[str]]:
-        if isinstance(v, str) and not v.startswith('['):
+        if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
 
-    SQLALCHEMY_DATABASE_URI: Optional[str] = 'sqlite:///local.db'
+    SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite:///local.db"
 
     FIRST_SUPERUSER_USERNAME: str = "test"
     FIRST_SUPERUSER_EMAIL: EmailStr = "test@networkout.com"
@@ -45,34 +45,37 @@ class Config():
 
 
 class ProdConfig(Config):
-    SECRET_KEY: str = os.getenv('SECRET_KEY')
-    SQLALCHEMY_DATABASE_URI: str  = os.getenv('DB_URI')
-    FIRST_SUPERUSER_USERNAME: str = os.getenv('SUPERUSER_USERNAME')
-    FIRST_SUPERUSER_EMAIL: EmailStr =  os.getenv('SUPERUSER_EMAIL')
-    FIRST_SUPERUSER_PASSWORD: str =  os.getenv('SUPERUSER_PASSWORD')
+    SECRET_KEY: str = os.getenv("SECRET_KEY")
+    SQLALCHEMY_DATABASE_URI: str = os.getenv("DB_URI")
+    FIRST_SUPERUSER_USERNAME: str = os.getenv("SUPERUSER_USERNAME")
+    FIRST_SUPERUSER_EMAIL: EmailStr = os.getenv("SUPERUSER_EMAIL")
+    FIRST_SUPERUSER_PASSWORD: str = os.getenv("SUPERUSER_PASSWORD")
 
 
 class LocalConfig(Config):
 
-    SECRET_KEY: str =  'this is amazing secret'
-    SQLALCHEMY_DATABASE_URI: str = 'sqlite:///networkout.db'
+    SECRET_KEY: str = "this is amazing secret"
+    SQLALCHEMY_DATABASE_URI: str = "sqlite:///networkout.db"
 
     FIRST_SUPERUSER_USERNAME: str = "admin"
     FIRST_SUPERUSER_EMAIL: EmailStr = "admin@networkout.com"
     FIRST_SUPERUSER_PASSWORD: str = "admin"
 
 
-def get_config(env='local') -> Type[Config]:
-    assert env.lower() in ['local','prod'], "Env variable needs to be prod, local or test. By default: local"
+def get_config(env="local") -> Type[Config]:
+    assert env.lower() in [
+        "local",
+        "prod",
+    ], "Env variable needs to be prod, local or test. By default: local"
     try:
         return getattr(sys.modules[__name__], f"{str(env).title()}Config").__call__()
     except AttributeError as e:
-        logger.info(f'could not find config: {env}')
+        logger.info(f"could not find config: {env}")
     return LocalConfig.__call__()
 
 
 def get_node():
-    node = os.getenv('ENV_NODE', 'local')
+    node = os.getenv("ENV_NODE", "local")
     logger.info(f"Node {node}")
     return node
 

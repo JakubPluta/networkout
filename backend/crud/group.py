@@ -42,7 +42,7 @@ def add_user_to_group(db: Session, user: User, group_id: int):
     return group
 
 
-def remove_user_from_group(group: Group,  user: User):
+def remove_user_from_group(group: Group, user: User):
     try:
         group.users.pop(user)
     except ValueError as e:
@@ -53,4 +53,3 @@ def remove_user_from_group(group: Group,  user: User):
 def is_user_in_group(db: Session, user: User, group_id: int):
     group = get_group_by_id(db, group_id)
     return user in group.users
-
